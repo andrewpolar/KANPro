@@ -123,12 +123,12 @@ bool DataHolder::ReadDataMFormula() {
 		double y = (1.0 / pi);
 		y *= (2.0 + 2.0 * inputs[counter][2]);
 		y *= (1.0 / 3.0);
-		y *= atan(20.0 * atan(inputs[counter][4]) * (inputs[counter][0] - 0.5 + inputs[counter][1] / 6.0)) + pi / 2.0;
+		y *= atan(20.0 * (inputs[counter][0] - 0.5 + inputs[counter][1] / 6.0) * exp(inputs[counter][4])) + pi / 2.0;
 
 		double z = (1.0 / pi);
 		z *= (2.0 + 2.0 * inputs[counter][3]);
 		z *= (1.0 / 3.0);
-		z *= atan(20.0 * atan(inputs[counter][4]) * (inputs[counter][0] - 0.5 - inputs[counter][1] / 6.0)) + pi / 2.0;
+		z *= atan(20.0 * (inputs[counter][0] - 0.5 - inputs[counter][1] / 6.0) * exp(inputs[counter][4])) + pi / 2.0;
 
 		target[counter] = static_cast<double>(y + z);
 		if (++counter >= nRecords) break;
