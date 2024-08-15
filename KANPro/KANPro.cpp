@@ -130,10 +130,10 @@ int main() {
     double sensitivity = 0.01 * (targetMax - targetMin);
     int innerPoints = 2;
     int outerPoints = 2;
-    double muInnerPL = 0.01;
+    double muInnerPL = 0.1;
     double muOuterPL = 0.01;
-    double muInnerSP = 0.05;
-    double muOuterSP = 0.05;
+    double muInnerSP = 0.1;
+    double muOuterSP = 0.01;
 
     //initialization of piecewise linear model
     auto addends = std::make_unique<std::unique_ptr<KANAddendPL>[]>(nModels);
