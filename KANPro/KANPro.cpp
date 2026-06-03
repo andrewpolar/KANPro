@@ -14,7 +14,15 @@
 //Publications:
 //https://www.sciencedirect.com/science/article/abs/pii/S0016003220301149
 //https://www.sciencedirect.com/science/article/abs/pii/S0952197620303742
-//https://arxiv.org/abs/2305.08194
+//https://link.springer.com/article/10.1007/s10994-025-06800-6
+//https://www.mdpi.com/2673-3951/6/3/88
+
+//This is the unit test for combined piecewise linear (PWL) and spline training.
+//The training starts as PWL, it also tests the change of number of linear segments 
+//while training with keeping acquired accuracy. 
+//When PWL model is ready, it is upgraded into spline with keeping aquired accuracy and training is continued 
+//until wanted accuracy is achieved. Transition from PWL to splines adds insignificant errors which are
+//quickly compensated by further tuning.
 
 #include <iostream>
 #include "DataHolder.h"
@@ -123,8 +131,8 @@ int main() {
     int nRecords = dataHolder->nRecords;   //10 000
     int nFeatures = dataHolder->nFeatures; //5
     int nModels = 11;
-    int PWLEpochs = 40;
-    int SplineEpochs = 50;
+    int PWLEpochs = 20;
+    int SplineEpochs = 20;
     int SplineTopComplete = 6;
     int SplineBtmComplete = 6;
     double sensitivity = 0.01 * (targetMax - targetMin);
@@ -152,6 +160,8 @@ int main() {
  
     //training of piecewise linear model with incrementing of linear segments
     for (int epoch = 0; epoch < PWLEpochs; ++epoch) {
+        int cnt = 0;
+        double error = 0.0;
         for (int i = 0; i < nRecords; ++i) {
             if (!isTraining[i]) continue;
             double model = 0.0;
@@ -162,8 +172,12 @@ int main() {
             for (int j = 0; j < nModels; ++j) {
                 addends[j]->UpdateUsingMemory(residual);
             }
+            error += residual * residual;
+            ++cnt;
         }
-        printf("PWL training epoch %d\r", epoch);
+        error /= cnt;
+        error = sqrt(error);
+        printf("PWL epoch %d, RMSE training = %5.4f\n", epoch, error);
 
         if (epoch > 0 && epoch < 9) {
             for (int j = 0; j < nModels; ++j) {
@@ -179,7 +193,7 @@ int main() {
     }
     printf("\n");
     clock_t end_PWL_training = clock();
-    printf("Time for PWL training %2.3f sec.\n", (double)(end_PWL_training - start_application) / CLOCKS_PER_SEC);
+    printf("Time for PWL training %2.3f sec.\n\n", (double)(end_PWL_training - start_application) / CLOCKS_PER_SEC);
 
     //initialization of spline model
     int innerP = addends[0]->HowManyInner();
@@ -208,6 +222,8 @@ int main() {
     //next block is training of spline model
     auto residuals = std::make_unique<double[]>(nRecords);
     for (int step = 0; step < SplineEpochs; ++step) {
+        int cnt = 0;
+        double error = 0.0;
         for (int i = 0; i < nRecords; ++i) {
             if (!isTraining[i]) continue;
             if (step > SplineTopComplete && step < SplineEpochs - SplineBtmComplete && residuals[i] < sensitivity) continue;
@@ -220,8 +236,12 @@ int main() {
                 splineaddends[j]->UpdateUsingMemory(diff);
             }
             residuals[i] = fabs(diff);
+            error += diff * diff;
+            ++cnt;
         }
-        printf("Spline training epoch %d\r", step);
+        error /= cnt;
+        error = sqrt(error);
+        printf("Spline epoch %d, RMSE training %5.4f\n", step, error);
     }
     printf("\n");
 
