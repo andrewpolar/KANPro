@@ -262,7 +262,7 @@ int main() {
     error = sqrt(error);
     error /= targetMax - targetMin;
 
-    printf("The realive RMSE for validation sample %6.4f\n", error);
+    printf("The relative RMSE for validation sample %6.4f\n", error);
 
     clock_t end_encoding = clock();
     printf("Time for training %2.3f sec.\n\n", (double)(end_encoding - start_application) / CLOCKS_PER_SEC);
